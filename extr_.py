@@ -41,13 +41,19 @@ class PDFExtract:
     file_ext=''
     pdf_files = []
     readers = []
+    
 
     def __init__(self, file_ext):
 
         packa = CheckPackages()
-
+        #self.dump_ext = dump_ext
         self.file_ext = file_ext
         self.pdf_files = self.get_files_by_ext()
+
+        #Page range below parsed as command line args
+        self.start_page = int(sys.argv[1])
+        self.end_page = int(sys.argv[2])
+        self.result = open('result.{}'.format(sys.argv[3]), 'w')
 
         for pdf_file in self.pdf_files:
                 self.readers.append(PdfFileReader(pdf_file, 'r'))
@@ -74,6 +80,11 @@ class PDFExtract:
     # def intall_libry(self, tool_name):
     #     subprocess.check_call([sys.executable, "-m", "pip", "install", tool_name])
 
+    def cire_non_ascii(self, string):
+        ''' Returns the string without non ASCII characters'''
+        stripped = (c for c in string if 0 < ord(c) < 127)
+        return ''.join(stripped)
+
     def get_files_by_ext(self):
         extracted_files= []
         dir_files = os.listdir(os.path.dirname(os.path.realpath(__file__)))
@@ -83,14 +94,22 @@ class PDFExtract:
                     extracted_files.append(file)    
         return extracted_files
 
-    def load_pages(self, start_page, end_page):
+    def load_pages(self):
+        
         if len(self.pdf_files)==1:
-            for i in range(start_page, end_page):
-                pageText = self.readers[0].getPage(i).extractText().split()
-                print(pageText)
+            for i in range(self.start_page-1, self.end_page):
+                try:
+                    pageText = self.readers[0].getPage(i).extractText().split()
+                    for text in pageText:
+                        text = self.cire_non_ascii(text)
+                        try:
+                            self.result.write('{}\n'.format(text))
+                        except UnicodeEncodeError:
+                            continue
+                except IndexError:
+                    continue
         else:
             print('Provide One PDF file at a time')
-        #return self.readers
 
 pdf = PDFExtract('pdf')
-print(pdf.load_pages(2,3))
+pdf.load_pages()
