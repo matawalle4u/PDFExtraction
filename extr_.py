@@ -117,9 +117,9 @@ class PDFExtract:
                     for text in pageText:
                         text = self.cire_non_ascii(text)
                         try:
-                            if sys.argv[1]=='t':
+                            if sys.argv[1]=='-t':
                                 self.result.write('{}\n'.format(text))
-                            elif sys.argv[1]=='c':
+                            elif sys.argv[1]=='-c':
                                 if self.get_citations(text):
                                     cited = self.get_citations(text)
                                     
@@ -138,7 +138,8 @@ class PDFExtract:
                             continue
                 except IndexError:
                     continue
-            print(self.citations)
+            #print(self.citations)
+            self.citations =[]
         else:
             print('Provide One PDF file at a time')
 
